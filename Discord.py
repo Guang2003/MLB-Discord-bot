@@ -22,7 +22,7 @@ async def on_message(message):
         for i in range(len(probable)):
             await message.channel.send(probable[i])
             time.sleep(0.01)
-
+            
 class TaskTime(commands.Cog):
     tz = datetime.timezone(datetime.timedelta(hours = 8))
     everyday_time = datetime.time(hour = 21, minute = 35, tzinfo = tz)
@@ -45,4 +45,6 @@ class TaskTime(commands.Cog):
 async def setup(bot: commands.Bot):
     await bot.add_cog(TaskTime(bot))
 
-client.run('MTIzMjIxMTg0NTkzOTcyNDM3MQ.GWvzbw.-JhcA1teSd9SW77c461KEFqszZKykDQIQw6sTk')
+file = open("token.txt","r")
+token = file.read()
+client.run(token)
