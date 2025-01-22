@@ -1,39 +1,38 @@
 import requests
-from bs4 import BeautifulSoup
-import datetime
+from datetime import datetime
+import json
+import mlbstatsapi
 
-def show_probable():
-    probable = []
-    today = str(datetime.date.today())
+def get_hitter_stat(player):
+    selected = ["gamesplayed", "groundouts", "airouts", "runs", "doubles", "triples", "homeruns", "strikeouts", "baseonballs", "intentionalwalks", "hits", "hitbypitch", "avg", "atbats", "obp", "slg", "ops", "caughtstealing", "stolenbases", "stolenbasepercentage", "plateappearances", "sacbunts", "sacflies", "babip", "groundoutstoairouts", "atbatsperhomerun"]
+    mlb = mlbstatsapi.Mlb()
+    player_id = mlb.get_people_id(player)[0]
+    stats = ['season', 'seasonAdvanced']
+    groups = ['hitting']
+    params = {'season': 2024}
+    mlb.get_player_stats(player_id, stats, groups, **params)
+    stat_dict = mlb.get_player_stats(player_id, stats=stats, groups=groups, **params)
+    season_hitting_stat = stat_dict['hitting']['season']
+    string = ""
+    for split in season_hitting_stat.splits:
+        for k, v in split.stat.__dict__.items():
+            if k in selected:
+                string += str(k) + ": " + str(v) + "\n"
+    return string
 
-    data = requests.get("https://www.mlb.com/probable-pitchers/"+today)
-
-    soup = BeautifulSoup(data.text,"html.parser")
-
-    games = soup.find_all('div',class_=lambda x: x and 'probable-pitchers__matchup probable-pitchers__matchup' in x)
-
-    probable.append("# "+today+" Game Schedule\n")
-    probable.append("## "+str(len(games))+" Games\n")
-    for game in games:
-        match_information = "```"
-        away_team = game.find('span',class_="probable-pitchers__team-name--away").text.strip()
-        home_team = game.find('span',class_="probable-pitchers__team-name--home").text.strip()
-        team_record = list(map(lambda s:s.text.strip(),game.find_all('div',class_="probable-pitchers__team-record")))
-        pitchers = list(map(lambda s:s.text.strip(),game.find_all('div',class_="probable-pitchers__pitcher-name")))
-        pitch_hands = list(map(lambda s:s.text.strip(),game.find_all('span',class_="probable-pitchers__pitcher-pitch-hand")))
-        pitch_summary = list(map(lambda s:s.text.strip(),game.find_all('div',class_="probable-pitchers__pitcher-stats-summary")))
-        i = 0
-        if pitchers[0] == "TBD":
-            match_information += "{:10}{:9}{:20}\n".format(away_team,team_record[0],pitchers[0])
-        else:
-            match_information += "{:10}{:9}{:20} {} {}\n".format(away_team,team_record[0],pitchers[0],pitch_hands[0],pitch_summary[0])
-            i += 1
-        match_information += "-"*70+"\n"
-        if pitchers[1] == "TBD":
-            match_information += "{:10}{:9}{:20}\n".format(home_team,team_record[1],pitchers[1])
-        else:
-            match_information += "{:10}{:9}{:20} {} {}\n".format(home_team,team_record[1],pitchers[1],pitch_hands[i],pitch_summary[i])
-        match_information += '```'
-        probable.append(match_information)
-
-    return probable
+def get_pitcher_stat(player):
+    selected = ["gamesplayed", "gamesstarted", "groundouts", "airouts", "runs", "doubles", "triples", "homeruns", "strikeouts", "baseonballs", "hits", "hitbypitch", "avg", "atbats", "obp", "slg", "ops", "caughtstealing", "stolenbases", "stolenbasepercentage", "numberofpitches", "inningspitched", "whip", "strikepercentage", "wildpitches", "pickoffs", "groundoutstoairouts", "pitchesperinning", "strikeoutwalkratio", "strikeoutsper9inn", "walksper9inn", "hitsper9inn", "runsscoredper9", "homerunsper9", "sacbunts", "sacflies", "battersfaced"]
+    mlb = mlbstatsapi.Mlb()
+    player_id = mlb.get_people_id(player)[0]
+    stats = ['season', 'seasonAdvanced']
+    groups = ['pitching']
+    params = {'season': 2024}
+    mlb.get_player_stats(player_id, stats, groups, **params)
+    stat_dict = mlb.get_player_stats(player_id, stats=stats, groups=groups, **params)
+    season_pitching_stat = stat_dict['pitching']['season']
+    string = ""
+    for split in season_pitching_stat.splits:
+        for k, v in split.stat.__dict__.items():
+            if k in selected:
+                string += str(k) + ": " + str(v) + "\n"
+    return string
